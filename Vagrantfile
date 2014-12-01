@@ -29,38 +29,39 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   end
 
   $script = <<-SCRIPT
-    # yum -y update
+    yum -y update
     if [ "${LANG}" != 'ja_JP.utf8' ]; then
         sed -i 's/^/#/g' /etc/sysconfig/i18n
         echo 'LANG="ja_JP.utf8"' >> /etc/sysconfig/i18n
     fi
-    # yum install dhcp httpd tftp-server syslinux createrepo -y
+    yum install dhcp httpd tftp-server syslinux createrepo -y
+    chkconfig iptables off
+    service iptables stop
     chkconfig dhcpd on
     chkconfig httpd on
     chkconfig tftp on
     chkconfig xinetd on
-    #if [ -f /vagrant/image/centos-6.5-x86_64-minimal.iso ]; then
-    #  mount -o loop -t iso9660 /vagrant/image/centos-6.5-x86_64-minimal.iso /media
-    #  mkdir /tmp/centos-6.5-x86_64-minimal
-    #  cp -r /media/* /tmp/centos-6.5-x86_64-minimal
-    #  mv /tmp/centos-6.5-x86_64-minimal /var/www/html
-    #fi
-    #cp /vagrant/config/dhcp/dhcpd.conf /etc/dhcp/dhcpd.conf
-    #service dhcpd start
-    #if [ ! -d /var/lib/tftpboot/pxeboot_centos-6.5-x86_64-minimal ]; then
-    #  mkdir /var/lib/tftpboot/pxeboot_centos-6.5-x86_64-minimal
-    #fi
-    #if [ -d /var/lib/tftpboot/pxeboot_centos-6.5-x86_64-minimal ]; then
-    #  cp /media/isolinux/{initrd.img,vmlinuz} /var/lib/tftpboot/pxeboot_centos-6.5-x86_64-minimal/
-    #  cp /usr/share/syslinux/{pxelinux.0,menu.c32} /var/lib/tftpboot/pxeboot_centos-6.5-x86_64-minimal/
-    # touch /var/lib/tftpboot/pxeboot_centos-6.5-x86_64-minimal/boot.msg
-    # mkdir /var/lib/tftpboot/pxeboot_centos-6.5-x86_64-minimal/pxelinux.cfg
-    #fi
+    if [ -f /vagrant/image/centos-6.5-x86_64-minimal.iso ]; then
+      mount -o loop -t iso9660 /vagrant/image/centos-6.5-x86_64-minimal.iso /media
+      mkdir /tmp/centos-6.5-x86_64-minimal
+      cp -r /media/* /tmp/centos-6.5-x86_64-minimal
+      mv /tmp/centos-6.5-x86_64-minimal /var/www/html
+    fi
+    cp /vagrant/config/dhcp/dhcpd.conf /etc/dhcp/dhcpd.conf
+    if [ ! -d /var/lib/tftpboot/pxeboot_centos-6.5-x86_64-minimal ]; then
+      mkdir /var/lib/tftpboot/pxeboot_centos-6.5-x86_64-minimal
+    fi
+    if [ -d /var/lib/tftpboot/pxeboot_centos-6.5-x86_64-minimal ]; then
+      cp /media/isolinux/{initrd.img,vmlinuz} /var/lib/tftpboot/pxeboot_centos-6.5-x86_64-minimal/
+      cp /usr/share/syslinux/{pxelinux.0,menu.c32} /var/lib/tftpboot/pxeboot_centos-6.5-x86_64-minimal/
+     touch /var/lib/tftpboot/pxeboot_centos-6.5-x86_64-minimal/boot.msg
+     mkdir /var/lib/tftpboot/pxeboot_centos-6.5-x86_64-minimal/pxelinux.cfg
+    fi
     cp /vagrant/config/centos-6.5-x86_64-minimal/default /var/lib/tftpboot/pxeboot_centos-6.5-x86_64-minimal/pxelinux.cfg/
     mkdir /var/www/html/ks
     cp /vagrant/config/centos-6.5-x86_64-minimal/default.cfg /var/www/html/ks/default.cfg
     chown -R apache:apache /var/www/html
-    #service dhcpd start
+    service dhcpd start
     service xinetd start
     service httpd start
   SCRIPT
