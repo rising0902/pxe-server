@@ -1,0 +1,11 @@
+prompt 0
+default menu.c32
+timeout 300
+menu title === PXE Boot Menu ===
+menu tabmsg Please Select a Number
+ontimeout centos65_core
+label centos65_core
+    menu label ^1 CentOS 6.5 core
+    kernel vmlinuz
+    append initrd=initrd.img ks=http://192.168.56.15/ks/default.cfg ksdevice=bootif
+    ipappend 2
